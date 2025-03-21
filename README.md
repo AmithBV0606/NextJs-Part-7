@@ -1,36 +1,40 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Next-Js by Codevolution : Part-7
 
-## Getting Started
+### Topics Covered :
 
-First, run the development server:
+- Authentication
+- Clerk Setup
+- Sign in and Sign out
+- Profile Settings
+- Conditional UI Rendering
+- Protecting Routes
+- Read Session and User Data
+- Role Based Access Control
+- Customizing Clerk Components
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Authentication
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- Most apps revolve around users.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- When building for users, we need to consider three fundamental concepts :
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+    - **Identity** : Verifying who someone is, through authentication.
+    - **Sessions** : Keep track of a user's logged-in state across requests.
+    - **Access** : Controls what they can do.
 
-## Learn More
+- In developers term, we call these authentication, session management and authorization.
 
-To learn more about Next.js, take a look at the following resources:
+- With React single-page apps, you're only dealing with client-side code.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- With Next.js, you've got to protect your app from three different angles: client-side, server-side and API routes.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- When implementing authentication, you will typically want to :
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+    1. Let users sign up
+    2. Give them a way to sign in
+    3. Enable them to manage their account (password changes, email updates, etc.)
+    4. Show or hide UI elements based on whether they're logged in
+    5. Protect certain routes depending on authentication status
+    6. Access session and user data when needed
+    7. Set up role-based access control (admin, editor, viewer, and so on)
+    8. Provide a way to sign out
