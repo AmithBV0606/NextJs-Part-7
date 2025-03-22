@@ -236,3 +236,33 @@ export const Navigation = () => {
   );
 };
 ```
+
+## Protecting Routes
+
+- Here we'll be protecting the routes by restricting the access of unauthenticated users.
+
+- For example if the user is logged out, he/she shouldn't be able to access any routes, unless they login back.
+
+- We'll be writting this logic in `middleware.ts` file.
+
+```ts
+// middleware.ts
+
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+
+// Matcher for the routes you want to protect
+const isProtectedRoute = createRouteMatcher(["/user-profile"]);
+
+export default clerkMiddleware(async (auth, req) => {
+  if (!isProtectedRoute(req)) await auth.protect();
+});
+
+export const config = {
+  matcher: [
+    // Skip Next.js internals and all static files, unless found in search params
+    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+    // Always run for API routes
+    "/(api|trpc)(.*)",
+  ],
+};
+```
