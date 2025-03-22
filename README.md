@@ -198,3 +198,41 @@ export default function UserProfilePage() {
   );
 }
 ```
+
+## Conditional UI Rendering
+
+- Here we'll be learning how to conditionally render UI elements, based on the user's authentication state.
+
+- Clerk makes this super easy with two special components `SignedIn` and `Signedout` elements.
+
+- Refer `components/navigation.tsx`.
+
+```js
+import {
+  SignInButton,
+  SignOutButton,
+  UserButton,
+  SignedIn,
+  SignedOut,
+} from "@clerk/nextjs";
+import Link from "next/link";
+
+export const Navigation = () => {
+  return (
+    <nav className="bg-[var(--background)] border-b-2 border-[var(--foreground)]/20">
+        <div className="flex items-center gap-4 cursor-pointer">
+            {/* Signin button goes here */}
+            <SignedOut>
+              <SignInButton mode="modal" />
+            </SignedOut>
+
+            <SignedIn>
+              <SignOutButton />
+              <UserButton />
+              <Link href={"/user-profile"}>Profile</Link>
+            </SignedIn>
+          </div>
+    </nav>
+  );
+};
+```
