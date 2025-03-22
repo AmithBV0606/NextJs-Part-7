@@ -133,3 +133,11 @@ export default function RootLayout({
 ```bash
 npm run dev
 ```
+
+## Sign in and Sign out
+
+- The good thing about clerk is that it provides pre-built components that handle all the authentication flows for us.
+
+- You can use `SignInButton` and `SignOutButton` component to Signin or Signout the user.
+
+- Refer `components/navigation.tsx` and `/app/layout.tsx` files.
