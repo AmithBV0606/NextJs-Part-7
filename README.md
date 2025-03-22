@@ -266,3 +266,64 @@ export const config = {
   ],
 };
 ```
+
+## Read Session and User Data
+
+- When building web applications we often need to access user and session data, to personalize experiences and track user actions with their account.
+
+- To read user and session data Clerk provides 2 helper methods i.e "auth" and "currentUser". These methods only works in server components and not on client components.
+
+```ts
+// dashboard/page.tsx
+
+import { auth, currentUser } from "@clerk/nextjs/server";
+
+export default async function DashboardPage() {
+  const authObj = await auth();
+  const userObj = await currentUser();
+
+  console.log("Auth Object", authObj);
+  console.log("User Object", userObj);
+
+  return <div>Dashboard page!!</div>;
+}
+```
+
+- In-order to read the same data given by "auth" and "currentUser", we have hooks such as `useAuth` and `useUser` hooks.
+
+```ts
+"use client";
+
+import { useState } from "react";
+import { useAuth, useUser } from "@clerk/nextjs";
+
+export const Counter = () => {
+  const [count, setCount] = useState(0);
+
+  //   const { isLoaded, userId, sessionId, getToken } = useAuth();
+
+  //   if (!isLoaded || !userId) {
+  //     return null;
+  //   }
+
+  const { isLoaded, isSignedIn, user } = useUser();
+
+  if (!isLoaded || !isSignedIn) {
+    return null;
+  }
+
+  return (
+    <div>
+      <p>Count : {count}</p>
+      <button onClick={() => setCount(count + 1)}>Increment</button>
+    </div>
+  );
+};
+
+```
+
+- `useAuth` : You can rely on this hook when you just need user ID to personalize the experiences or associate data with the user.
+
+- `useUser` : use this hook only when you need full user object.
+
+- Refer `app/dashboard/page.tsx`, `components/counter.tsx` and `app/page.tsx` files.
