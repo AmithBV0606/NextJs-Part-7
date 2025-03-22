@@ -141,3 +141,60 @@ npm run dev
 - You can use `SignInButton` and `SignOutButton` component to Signin or Signout the user.
 
 - Refer `components/navigation.tsx` and `/app/layout.tsx` files.
+
+## Profile Settings 
+
+- We have signin button and signout button components for signing in and signing out.
+
+- But for signing out clerk prrovides even more nicer component called `UserButton` component.
+
+- This component creates an user avatar, by clicking on which it opens a modal, using which we can edit our profiles/account.
+
+- If we want to have a seperate profile page settings page and not a modal, clerk provides us a profile component that we can embed in optional catch-all routes.
+
+### Demo 
+
+```js
+// components/navigation.tsx
+
+import { SignInButton, SignOutButton, UserButton } from "@clerk/nextjs";
+import Link from "next/link";
+
+export const Navigation = () => {
+  return (
+    <nav className="bg-[var(--background)] border-b-2 border-[var(--foreground)]/20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between h-16 items-center">
+          <div className="flex-shrink-0">
+            <h1 className="text-xl font-semibold text-[var(--foreground)]">
+              Next.js App
+            </h1>
+          </div>
+
+          <div className="flex items-center gap-4 cursor-pointer">
+            {/* Signin button goes here */}
+            <SignInButton mode="modal" />
+            <SignOutButton />
+            <UserButton />
+            <Link href={"/user-profile"}>Profile</Link>
+          </div>
+        </div>
+      </div>
+    </nav>
+  );
+};
+```
+
+```js
+// app/user-profile/[[...user-profile]]/page.tsx
+
+import { UserProfile } from "@clerk/nextjs";
+
+export default function UserProfilePage() {
+  return (
+    <div className="flex justify-center items-center py-8">
+      <UserProfile path="/user-profile" />
+    </div>
+  );
+}
+```
