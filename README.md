@@ -481,3 +481,70 @@ export async function removeRole(formData: FormData) {
 **Step 9** : Flush out the `admin/page.tsx` page to let admins manage user roles from the User Interface(UI).
 
 - Refer `admin/page.tsx` file.
+
+## Customizing Clerk Components
+
+- For dedicated SignUp button, use `SignUpButton` method available from Clerk's end.
+
+- To add the styling to the Signin/Signup button.
+
+```html
+<SignedOut>
+  <SignInButton mode="modal">
+    <button className="px-2 py-1 text-sm border border-neutral-300 dark:border-neutral-600 dark:text-neutral-200 dark:hover:bg-neutral-700">
+      Sign in
+    </button>
+  </SignInButton>
+</SignedOut>
+```
+
+- To have dedicated page for SignIn/SignUp, remove the `mode="modal"` attribute.
+
+```html
+<SignedOut>
+  <SignInButton>
+    <button className="px-2 py-1 text-sm border border-neutral-300 dark:border-neutral-600 dark:text-neutral-200 dark:hover:bg-neutral-700">
+      Sign in
+    </button>
+  </SignInButton>
+</SignedOut>
+```
+
+- In the above case, if you notice the URL, you'll see that there is no `app` domain. That is because these pages are hosted by Clerk. 
+
+- If you would prefer to keep users on your domain, you can create your own signin and signup pages, while still using clerks component.
+
+- Refer `sign-up/[[...sign-up]]/page.tsx`, `sign-in/[[...sign-in]]/page.tsx` and `components/navigation.tsx` file. Also ensure both routes are public in your `middelware.ts` file.
+
+- Finally update `.env.local` file with 2 new environment variables.
+
+```
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+```
+
+### Redirects after authentication
+
+- By default Clerk is smart. It remembers where users came from using a redirect URL query parameter.
+
+- Create a folder named `about` and a `page.tsx` file inside that folder.
+
+- Logout of app and then visit `http://localhost:3000/about`, you'll be redirected to signin page. If you signin to the app, Clerk is smart enough to redirect you to `/about` page.
+
+- Create a folder named `onboarding` and a `page.tsx` file inside that folder.
+
+- Again update `.env.local` file with 2 new environment variables.
+
+```
+NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/onboarding
+NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/dashboard
+```
+
+- Using the above environment variables makes sure that users who signup will land on `http://localhost:3000/onboarding` and users who signin will land on `http://localhost:3000/dashboard`.
+
+- If you don't care about the redirect URL query parameter and you want to force specific redirects regardless of where users came from, use the following environment variables.
+
+```
+NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL=/onboarding
+NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL=/dashboard
+```
