@@ -327,3 +327,157 @@ export const Counter = () => {
 - `useUser` : use this hook only when you need full user object.
 
 - Refer `app/dashboard/page.tsx`, `components/counter.tsx` and `app/page.tsx` files.
+
+## Role Based Access Control
+
+### User roles and permissions
+
+- Most apps need more than just checking if someone's logged in or not.
+
+- They need different permission levels for different users.
+
+- How to implement role-based access control(RBAC) using clerk?
+
+<ins>**Configure the session token**</ins> : Configuring Clerk to make user roles available in our session token  
+
+  - Clerk gives us something called user metadata, which is like a storage space for extra user information.
+  - We'll use it to store user roles.
+  - publicMetadata because it's read-only in the browser, making it super secure for storing sensitive information like user roles.
+  - To build a basic RBAC system, we need to make sure this publicMetadata is readily available in the session token.
+  - We can quickly check user roles without having to make extra network requests every time we need this information.
+
+### Demo
+
+**Step 1** : Open the Clerk dashboard and select "Sessions" under onfigure section.
+
+**Step 2** : Under the "Customize session token" block, clieck "Edit" button.
+
+**Step 3** : In the modal that opens after clicking the "Edit" button, Add the json with the following key and value and click on "Save" button : 
+
+```json
+{ 
+  "metadata": "{{user.public_metadata}}" 
+}
+```
+
+**Step 4** : We need to create a global typescript definition to work with roles. In the root directory, create a folder named `types` and a file called `global.d.ts`.
+
+```ts
+// This makes this file a module
+export {};
+
+// Define the roles available in your app. For example a social media app where moderators can moderate thr content and the admin can manage moderators.
+export type Roles = "admin" | "moderator";
+
+// Extend clerk's session token type globally : This will provide auto completion and prevent typescript errors, when working with roles throughout our application.
+declare global {
+  interface CustomJwtSessionClaims {
+    metadata: {
+      role?: Roles;
+    };
+  }
+}
+```
+
+**Step 5** : We have to manually add the admin role to our own user or to yourself.
+
+  - In the Clerk's dashboard, navigate to users tab. 
+  - Click on the user you've chosen to make admin.
+  - You'll be redirected to a page with all the information about the user that you've chosen.
+  - Under the "Metadata" section, Click "Edit" button next to "public" option.
+  - Update the JSON to `{ "role": "admin" }` and click on "Save" button.
+
+**Step 6** : Define and protect a new admin route `app/admin/page.tsx`.
+
+```ts
+export default function Admin() {
+    return <h1>Admins only page</h1>
+}
+```
+
+**Step 7** To view this page i.e `app/admin/page.tsx`, you not only have to be signed in, but alos needs to be admin. To protect this route we need to apply Role Based Access Control(RBAC) in our `middlewarw.ts` file.
+
+```ts
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
+
+const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
+
+export default clerkMiddleware(async (auth, req) => {
+  const { userId } = await auth();
+
+  if (
+    isAdminRoute(req) &&
+    (await auth()).sessionClaims?.metadata?.role !== "admin"
+  ) {
+    const url = new URL("/", req.url);
+    return NextResponse.redirect(url);
+  }
+});
+
+export const config = {
+  matcher: [
+    // Skip Next.js internals and all static files, unless found in search params
+    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+    // Always run for API routes
+    "/(api|trpc)(.*)",
+  ],
+};
+```
+
+**NOTE :** To check if the RBAC is working properly, Change the role of the user, who was previously made "admin", from "admin" to "moderator" in Clerk dashboard, under users section. The try to access `app/admin/page.tsx` route, you'll be redirected to home page.
+
+**Step 8** : OffCourse manually adding roles to users is not scalable. In real world application an admin will want to be able to manage the user roles. So we need to create **Server Actions** to manage user roles. `Create action.ts` file inside `admin` folder.
+
+```ts
+"use server";
+
+import { auth, clerkClient } from "@clerk/nextjs/server";
+import { Roles } from "@/types/globals";
+import { revalidatePath } from "next/cache";
+
+export async function setRole(formData: FormData) {
+  const { sessionClaims } = await auth();
+
+  if (sessionClaims?.metadata?.role !== "admin") {
+    throw new Error("Not authorized!!");
+  }
+
+  const client = await clerkClient();
+  const id = formData.get("id") as string;
+  const role = formData.get("role") as Roles;
+
+  try {
+    await client.users.updateUser(id, {
+      publicMetadata: { role },
+    });
+    revalidatePath("/admin");
+  } catch {
+    throw new Error("Failed to set role");
+  }
+}
+
+export async function removeRole(formData: FormData) {
+  const { sessionClaims } = await auth();
+
+  if (sessionClaims?.metadata?.role !== "admin") {
+    throw new Error("Not authorized!!");
+  }
+
+  const client = await clerkClient();
+  const id = formData.get("id") as string;
+
+  try {
+    await client.users.updateUser(id, {
+      publicMetadata: { role: null },
+    });
+    revalidatePath("/admin");
+  } catch {
+    throw new Error("Failed to remove role");
+  }
+}
+```
+
+**Step 9** : Flush out the `admin/page.tsx` page to let admins manage user roles from the User Interface(UI).
+
+- Refer `admin/page.tsx` file.
